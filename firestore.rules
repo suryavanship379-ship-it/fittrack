@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ----------------------------------------------------
+    // HELPER FUNCTIONS
+    // ----------------------------------------------------
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Get the user's role mapping document
+    function getUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    // Check if the user has the 'owner' role
+    function isOwner() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        getUserDoc().role == 'owner';
+    }
+    
+    // Check if the user has the 'trainer' role
+    function isTrainer() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        getUserDoc().role == 'trainer';
+    }
+    
+    // Check if the user has the 'member' role
+    function isMember() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        getUserDoc().role == 'member';
+    }
+
+    // ----------------------------------------------------
+    // COLLECTION RULES
+    // ----------------------------------------------------
+
+    // 1. Users collection: Role maps matching auth uid
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isOwner());
+      allow write: if isOwner() || (isAuthenticated() && request.auth.uid == userId);
+    }
+
+    // 2. Members collection
+    match /members/{memberId} {
+      allow read, write: if isOwner();
+      
+      // Members can read their own profile document
+      allow read: if isMember() && getUserDoc().memberId == memberId;
+      
+      // Trainers can read/update members assigned to them (matched by name)
+      allow read, update: if isTrainer() && 
+        resource.data.assignedTrainer.toLowerCase().trim() == getUserDoc().name.toLowerCase().trim();
+    }
+
+    // 3. Trainers collection
+    match /trainers/{trainerId} {
+      allow read, write: if isOwner();
+      
+      // Trainers can read and update their own document
+      allow read, update: if isTrainer() && getUserDoc().trainerId == trainerId;
+    }
+
+    // 4. Workout Plans collection
+    match /workout_plans/{planId} {
+      allow read, write: if isOwner();
+      
+      // Trainers can read, create, update, and delete their own workout plans
+      allow read, write: if isTrainer() && 
+        (
+          (resource == null || resource.data.trainerName.toLowerCase().trim() == getUserDoc().name.toLowerCase().trim()) &&
+          (request.resource == null || request.resource.data.trainerName.toLowerCase().trim() == getUserDoc().name.toLowerCase().trim())
+        );
+        
+      // Members can read plans assigned to their name
+      allow read: if isMember() && 
+        resource.data.memberName.toLowerCase().trim() == getUserDoc().name.toLowerCase().trim();
+    }
+
+    // 5. Attendance collection
+    match /attendance/{attendanceId} {
+      allow read, write: if isOwner();
+      
+      // Members can read their own attendance records
+      allow read: if isMember() && 
+        resource.data.memberName.toLowerCase().trim() == getUserDoc().name.toLowerCase().trim();
+        
+      // Trainers can read or mark attendance for their assigned members
+      allow read, create: if isTrainer() && 
+        exists(/databases/$(database)/documents/members/$(request.resource.data.memberId)) &&
+        get(/databases/$(database)/documents/members/$(request.resource.data.memberId)).data.assignedTrainer.toLowerCase().trim() == getUserDoc().name.toLowerCase().trim();
+    }
+
+    // 6. Payments collection
+    match /payments/{paymentId} {
+      allow read, write: if isOwner();
+      
+      // Members can read their own billing receipts
+      allow read: if isMember() && 
+        resource.data.memberName.toLowerCase().trim() == getUserDoc().name.toLowerCase().trim();
+      
+      // Trainers have no access to payment transactions
+      allow read, write: if false;
+    }
+
+    // 7. Gallery collection
+    match /gallery/{photoId} {
+      // Anyone logged in can view the gym gallery
+      allow read: if isAuthenticated();
+      
+      // Only owners and trainers can upload or delete gallery photos
+      allow write: if isOwner() || isTrainer();
+    }
+
+    // 8. Gym Settings collection
+    match /settings/{settingId} {
+      // Only the Owner can read or write settings
+      allow read, write: if isOwner();
+    }
+  }
+}

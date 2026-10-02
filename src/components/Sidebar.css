@@ -1,0 +1,397 @@
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background-color: rgba(11, 11, 11, 0.85) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid #1e1e1e !important;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.collapsed {
+  width: 80px;
+}
+
+.sidebar.hidden {
+  transform: translateX(-100%);
+}
+
+.sidebar-brand {
+  position: relative;
+  padding: 30px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #161616;
+  height: 98px;
+  box-sizing: border-box;
+}
+
+.brand-logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.sidebar.collapsed .sidebar-brand {
+  justify-content: center;
+  padding: 30px 0;
+}
+
+.sidebar-brand .brand-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.9rem;
+  font-style: italic;
+  font-weight: 950;
+  letter-spacing: -1px;
+  margin: 0;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.brand-collapsed {
+  font-size: 1.8rem !important;
+  letter-spacing: 0px !important;
+  text-align: center;
+  width: 100%;
+}
+
+.brand-title .text-white {
+  color: #ffffff;
+}
+
+.brand-title .text-red {
+  color: #B4FF39; /* Neon lime */
+  text-shadow: 0 0 15px rgba(180, 255, 57, 0.3);
+}
+
+/* Collapse/Expand Toggle Button */
+.sidebar-collapse-toggle {
+  background: rgba(17, 17, 17, 0.9);
+  border: 1px solid #222222;
+  color: #B4FF39;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: absolute;
+  right: -12px;
+  top: 37px;
+  z-index: 110;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.sidebar-collapse-toggle:hover {
+  background: #B4FF39;
+  color: #000000;
+  border-color: #B4FF39;
+  box-shadow: 0 0 10px rgba(180, 255, 57, 0.4);
+  transform: scale(1.1);
+}
+
+.sidebar-menu {
+  flex: 1;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.sidebar.collapsed .sidebar-menu {
+  padding: 20px 8px;
+  overflow: visible;
+}
+
+.sidebar.collapsed .sidebar-footer {
+  overflow: visible;
+}
+
+.sidebar.collapsed {
+  overflow: visible;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  color: #a1a1aa;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  position: relative;
+}
+
+.menu-item:hover {
+  color: #B4FF39;
+  background-color: rgba(180, 255, 57, 0.05);
+  padding-left: 20px;
+}
+
+.menu-item.active {
+  background-color: #B4FF39 !important;
+  color: #000000 !important;
+  font-weight: 800;
+  box-shadow: 0 4px 15px rgba(180, 255, 57, 0.35) !important;
+  padding-left: 18px;
+}
+
+.menu-item.active .menu-icon {
+  color: #000000 !important;
+}
+
+.menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71717a;
+  transition: color 0.3s ease;
+}
+
+.menu-item:hover .menu-icon {
+  color: #B4FF39;
+}
+
+.sidebar-footer {
+  padding: 20px 16px;
+  border-top: 1px solid #161616 !important;
+}
+
+.logout-btn {
+  color: #ff4d4d;
+}
+
+.logout-btn .menu-icon {
+  color: #ff4d4d;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 77, 77, 0.08);
+  color: #ff4d4d;
+  padding-left: 20px;
+}
+
+.logout-btn:hover .menu-icon {
+  color: #ff4d4d;
+}
+
+/* Collapsed hover state overrides */
+.sidebar.collapsed .menu-item {
+  justify-content: center;
+  padding: 13px 0;
+}
+
+.sidebar.collapsed .menu-item:hover {
+  padding-left: 0;
+  background-color: rgba(180, 255, 57, 0.08);
+}
+
+.sidebar.collapsed .logout-btn:hover {
+  padding-left: 0;
+  background-color: rgba(255, 77, 77, 0.08);
+}
+
+/* Tooltip styles */
+.sidebar-tooltip {
+  position: absolute;
+  left: 76px;
+  background-color: #111111;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #222222;
+  font-size: 0.8rem;
+  font-weight: 600;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  z-index: 200;
+}
+
+.sidebar-tooltip::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background-color: #111111;
+  border-left: 1px solid #222222;
+  border-bottom: 1px solid #222222;
+}
+
+.menu-item:hover .sidebar-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* DND toggler custom display overrides in Sidebar */
+.dnd-toggle-btn {
+  color: #a1a1aa;
+}
+.dnd-toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  color: #ffffff !important;
+}
+
+/* Scrollbar styles for sidebar */
+.sidebar-menu::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: #222222;
+  border-radius: 10px;
+}
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+  background: #B4FF39;
+}
+
+/* ==========================================================================
+   LAYOUT COMPONENT STYLES
+   ========================================================================== */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Sidebar overlay for mobile */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 99;
+  animation: fadeInOverlay 0.2s ease-out;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Main Content Wrapper */
+.main-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  position: relative;
+}
+
+/* Desktop Margins */
+.main-content-wrapper.expanded {
+  margin-left: 260px;
+}
+
+.main-content-wrapper.collapsed {
+  margin-left: 80px;
+}
+
+.main-content-wrapper.hidden {
+  margin-left: 0;
+}
+
+/* Mobile Layout Margin */
+.main-content-wrapper.mobile {
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+/* Top Header */
+.main-header {
+  display: flex;
+  align-items: center;
+  padding: 24px 40px 8px 40px;
+  background: transparent;
+  z-index: 10;
+}
+
+.content-body {
+  padding: 8px 40px 40px 40px;
+  flex: 1;
+}
+
+/* Hamburger button styling */
+.hamburger-btn {
+  background: rgba(17, 17, 17, 0.7);
+  border: 1px solid #222222;
+  color: #B4FF39;
+  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.hamburger-btn:hover {
+  background: rgba(180, 255, 57, 0.08);
+  border-color: #B4FF39;
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(180, 255, 57, 0.2);
+}
+
+/* ==========================================================================
+   MOBILE MEDIA QUERIES (max-width: 767px)
+   ========================================================================== */
+@media (max-width: 767px) {
+  .sidebar {
+    width: 260px !important;
+    transform: translateX(-100%) !important;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0) !important;
+  }
+  
+  .main-content-wrapper {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  
+  .main-header {
+    padding: 16px 20px 8px 20px;
+  }
+  
+  .content-body {
+    padding: 8px 20px 24px 20px;
+  }
+}
