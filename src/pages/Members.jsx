@@ -100,22 +100,21 @@ function Members() {
     const emailErr = validateForm.email(email)
     if (emailErr) { setError(emailErr); return }
 
+    if (!password || password.length < 6) {
+      setError("Password is required and must be at least 6 characters long.")
+      return
+    }
+
     setAddingMember(true)
 
     try {
-      let createdUid = ""
-      // If password provided, create secondary Firebase Auth user
-      if (password && password.length >= 6) {
-        try {
-          const { createSecondaryUser } = await import("../firebase")
-          const { setDoc } = await import("firebase/firestore")
-          createdUid = await createSecondaryUser(email.trim(), password)
-        } catch (authErr) {
-          console.warn("Secondary auth user creation notice:", authErr)
-        }
-      }
+      // 1. Create Firebase Auth user via secondary app instance so owner remains logged in
+      const { createSecondaryUser } = await import("../firebase")
+      const { setDoc } = await import("firebase/firestore")
+      
+      const createdUid = await createSecondaryUser(email.trim(), password)
 
-      // Create Member Document in Firestore `members` collection
+      // 2. Create Member Document in Firestore `members` collection
       const memberRef = await addDoc(collection(db, "members"), {
         name: name.trim(),
         phone: phone.trim(),
@@ -126,22 +125,15 @@ function Members() {
         joinDate: new Date().toISOString().split("T")[0]
       })
 
-      // Link User Mapping if Auth user created
-      if (createdUid) {
-        try {
-          const { setDoc } = await import("firebase/firestore")
-          await setDoc(doc(db, "users", createdUid), {
-            uid: createdUid,
-            name: name.trim(),
-            email: email.trim(),
-            role: "member",
-            memberId: memberRef.id,
-            createdAt: new Date().toISOString()
-          })
-        } catch (userErr) {
-          console.warn("User profile doc creation notice:", userErr)
-        }
-      }
+      // 3. Link User Mapping Profile in Firestore `users/{uid}` collection
+      await setDoc(doc(db, "users", createdUid), {
+        uid: createdUid,
+        name: name.trim(),
+        email: email.trim(),
+        role: "member",
+        memberId: memberRef.id,
+        createdAt: new Date().toISOString()
+      })
 
       setName("")
       setPhone("")
@@ -399,12 +391,13 @@ function Members() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-1">Temporary Password (Optional)</label>
+            <label className="block text-xs font-semibold text-gray-400 mb-1">Password</label>
             <input
               type="password"
               placeholder="Min 6 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
               minLength={6}
               className="w-full bg-black border border-gray-800 rounded-xl px-4 py-2.5 outline-none focus:border-red-600 text-sm text-white transition-colors"
             />

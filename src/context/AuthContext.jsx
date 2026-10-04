@@ -36,12 +36,13 @@ export const AuthProvider = ({ children }) => {
       if (user) {
         setCurrentUser(user)
         try {
+          const isOwnerEmail = user.email && user.email.toLowerCase() === "ownerfittrack@gmail.com"
           const userDocRef = doc(db, "users", user.uid)
           const userDocSnap = await getDoc(userDocRef)
           
           if (userDocSnap.exists()) {
             const userData = userDocSnap.data()
-            const role = userData.role ? userData.role.toLowerCase() : "owner"
+            const role = isOwnerEmail ? "owner" : (userData.role ? userData.role.toLowerCase() : "member")
             setUserRole(role)
             
             if (role === "trainer" && userData.trainerId) {
@@ -63,14 +64,29 @@ export const AuthProvider = ({ children }) => {
             } else {
               setRoleData({ name: userData.name || user.email })
             }
-          } else {
+          } else if (isOwnerEmail) {
+            try {
+              await setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
+                name: "Gym Owner",
+                email: user.email,
+                role: "owner",
+                createdAt: new Date().toISOString()
+              })
+            } catch (e) {
+              console.warn("Could not save owner profile doc:", e)
+            }
             setUserRole("owner")
-            setRoleData({ name: user.email || "Gym Owner" })
+            setRoleData({ name: "Gym Owner" })
+          } else {
+            setUserRole("member")
+            setRoleData({ name: user.email })
           }
         } catch (error) {
           console.error("Error fetching user role document: ", error)
-          setUserRole("owner")
-          setRoleData({ name: user.email || "Gym Owner" })
+          const isOwnerEmail = user.email && user.email.toLowerCase() === "ownerfittrack@gmail.com"
+          setUserRole(isOwnerEmail ? "owner" : "member")
+          setRoleData({ name: user.email })
         }
       } else {
         setCurrentUser(null)

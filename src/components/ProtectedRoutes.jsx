@@ -9,10 +9,18 @@ const getHomePath = (role) => {
 }
 
 export const OwnerRoute = ({ children }) => {
-  const { currentUser } = useAuth()
+  const { currentUser, userRole } = useAuth()
 
   if (!currentUser) {
     return <Navigate to="/login" replace />
+  }
+
+  if (userRole === "member") {
+    return <Navigate to="/member-dashboard" replace />
+  }
+
+  if (userRole === "trainer") {
+    return <Navigate to="/trainer-dashboard" replace />
   }
 
   return children
